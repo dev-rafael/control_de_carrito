@@ -29,14 +29,14 @@ if (BT.available())
     //Determina que accion llevar acabo segun la instruccion recibida
   switch (cnal)
   {
-    case 'A'://Activa el giro de ambos motores hacia la izquierda
+    case 'D'://Activa el giro de ambos motores hacia la izquierda
       digitalWrite(pinizq,HIGH);
       digitalWrite(pinder,LOW);
       digitalWrite(pinizq2,LOW);
       digitalWrite(pinder2,HIGH);
       Serial.println(" Izquierda ");
       break;
-    case 'D'://Activa el giro de ambos motores hacia la derecha
+    case 'A'://Activa el giro de ambos motores hacia la derecha
       digitalWrite(pinder,HIGH);
       digitalWrite(pinizq,LOW);
       digitalWrite(pinder2,LOW);
