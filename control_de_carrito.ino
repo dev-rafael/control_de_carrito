@@ -68,6 +68,7 @@ if (BT.available())
         velocidad=velocidad-51;
         analogWrite(pinvel,velocidad);
         Serial.print(velocidad);
+        
       }
       */
       break;
