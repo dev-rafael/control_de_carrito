@@ -3,8 +3,8 @@ SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
 boolean encoder;
-boolean encoderAnt;
-boolean encoderAct;
+boolean encoder1;
+boolean encoder2;
 int pasos = 0;
 int vueltas = 0;
 int pinizq=5;//Pin de activacion izquierdo del primer puente H
@@ -23,28 +23,19 @@ pinMode(pinizq,OUTPUT);
 pinMode(pinder2,OUTPUT);
 pinMode(pinizq2,OUTPUT);
 pinMode(pinEncoder, INPUT);
-if(digitalRead(pinEncoder) == LOW){
-    encoderAnt = true;
-  }else{
-    encoderAnt = false;
-  }
 }
 
 void loop() {
   if(digitalRead(pinEncoder) == LOW){
-    encoderAct = true;
-  }else{
-    encoderAct = false;
+    encoder1 = true;
   }
-  if(!encoderAct && encoderAnt){
-    encoder = false;
-  }else{
-    encoder = true;
-    encoderAnt=encoderAct;
+  if(digitalRead(pinEncoder) == HIGH){
+    encoder2 = true;
   }
-
-  if(encoder){
+  if(encoder1&&encoder2){
     pasos++;
+    encoder1=false;
+    encoder2=false;
     Serial.print("Pasos: ");
     Serial.println(pasos);
   }
