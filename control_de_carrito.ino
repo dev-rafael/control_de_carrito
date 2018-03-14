@@ -39,7 +39,7 @@ void loop() {
     Serial.print("Pasos: ");
     Serial.println(pasos);
   }
-  if(pasos>=20){
+  if(pasos>=40){
     pasos = 0;
     vueltas++;
     Serial.print("Vueltas: ");
@@ -75,28 +75,28 @@ if (BT.available())
       digitalWrite(pinder,LOW);
       digitalWrite(pinizq2,HIGH);
       digitalWrite(pinder2,LOW);
-      /*
+      break;
+    case 'V':
       if (velocidad<=204)
       {
         velocidad=velocidad+51;
         analogWrite(pinvel,velocidad);
         Serial.print(velocidad);
       }
-      */
       break;
     case 'S'://Disminuye la velocidad de giro
       digitalWrite(pinizq,LOW);
       digitalWrite(pinder,HIGH);
       digitalWrite(pinizq2,LOW);
       digitalWrite(pinder2,HIGH);
-      /*
+      break;
+    case 'B':
       if (velocidad>=51)
       {
         velocidad=velocidad-51;
         analogWrite(pinvel,velocidad);
         Serial.print(velocidad);
       }
-      */
       break;
     case 'O'://Detiene los motores
       digitalWrite(pinizq,LOW);
