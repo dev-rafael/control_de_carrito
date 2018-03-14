@@ -1,6 +1,12 @@
 #include <SoftwareSerial.h>
 SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
+int pinEncoder = 8;//Pin donde se conecta el sensor del econder
+boolean encoder;
+boolean encoderAnt;
+boolean encoderAct;
+int pasos = 0;
+int vueltas = 0;
 int pinizq=5;//Pin de activacion izquierdo del primer puente H
 int pinder=4;//Pin de activacion derecho del primer puente H
 int pinvel=3;//Pin del enable, controla la velocidad
@@ -16,9 +22,39 @@ pinMode(pinder,OUTPUT);
 pinMode(pinizq,OUTPUT);
 pinMode(pinder2,OUTPUT);
 pinMode(pinizq2,OUTPUT);
+pinMode(pinEncoder, INPUT);
+if(digitalRead(pinEncoder) == LOW){
+    encoderAnt = true;
+  }else{
+    encoderAnt = false;
+  }
 }
 
 void loop() {
+  if(digitalRead(pinEncoder) == LOW){
+    encoderAct = true;
+  }else{
+    encoderAct = false;
+  }
+  if(!encoderAct && encoderAnt){
+    encoder = false;
+  }else{
+    encoder = true;
+    encoderAnt=encoderAct;
+  }
+
+  if(encoder){
+    pasos++;
+    Serial.print("Pasos: ");
+    Serial.println(pasos);
+  }
+  if(pasos>=20){
+    pasos = 0;
+    vueltas++;
+    Serial.print("Vueltas: ");
+    Serial.println(vueltas);
+  }
+  
   //Revisa si hay una conexion BT establecida
 if (BT.available())
  {
@@ -68,7 +104,6 @@ if (BT.available())
         velocidad=velocidad-51;
         analogWrite(pinvel,velocidad);
         Serial.print(velocidad);
-        
       }
       */
       break;
