@@ -2,6 +2,7 @@
 SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
+float conversionCm = 1.55;
 boolean encoder;
 boolean encoder1;
 boolean encoder2;
@@ -13,6 +14,7 @@ int pinvel=3;//Pin del enable, controla la velocidad
 int velocidad=51;//Variable que guarda la velocidad
 int pinder2=7;//Pin de activacion izquierdo del segundo puente H
 int pinizq2=6;//Pin de activacion derecho del segundo puente H
+
 void setup() {
   // put your setup code here, to run once:
 BT.begin(9600);//Inicio de comunicacion Bluetooth
@@ -25,26 +27,8 @@ pinMode(pinizq2,OUTPUT);
 pinMode(pinEncoder, INPUT);
 }
 
-void loop() {
-  if(digitalRead(pinEncoder) == LOW){
-    encoder1 = true;
-  }
-  if(digitalRead(pinEncoder) == HIGH){
-    encoder2 = true;
-  }
-  if(encoder1&&encoder2){
-    pasos++;
-    encoder1=false;
-    encoder2=false;
-    Serial.print("Pasos: ");
-    Serial.println(pasos);
-  }
-  if(pasos>=40){
-    pasos = 0;
-    vueltas++;
-    Serial.print("Vueltas: ");
-    Serial.println(vueltas);
-  }
+void loop() {  
+  cuentaPasos();
   
   //Revisa si hay una conexion BT establecida
 if (BT.available())
@@ -71,10 +55,7 @@ if (BT.available())
       Serial.println(" Derecha ");
       break;
     case 'W'://Aumenta la velocidad de giro
-      digitalWrite(pinizq,HIGH);
-      digitalWrite(pinder,LOW);
-      digitalWrite(pinizq2,HIGH);
-      digitalWrite(pinder2,LOW);
+      adelante(0);
       break;
     case 'V':
       if (velocidad<=204)
@@ -85,10 +66,7 @@ if (BT.available())
       }
       break;
     case 'S'://Disminuye la velocidad de giro
-      digitalWrite(pinizq,LOW);
-      digitalWrite(pinder,HIGH);
-      digitalWrite(pinizq2,LOW);
-      digitalWrite(pinder2,HIGH);
+      atras(0);
       break;
     case 'B':
       if (velocidad>=51)
@@ -97,6 +75,9 @@ if (BT.available())
         analogWrite(pinvel,velocidad);
         Serial.print(velocidad);
       }
+      break;
+    case 'N':      
+      atras(21);
       break;
     case 'O'://Detiene los motores
       digitalWrite(pinizq,LOW);
@@ -110,5 +91,81 @@ if (BT.available())
   if (Serial.available())
   {
     BT.write(Serial.read());
+  }
+}
+
+void cuentaPasos(){
+  if(digitalRead(pinEncoder) == LOW){
+    encoder1 = true;
+  }
+  if(digitalRead(pinEncoder) == HIGH){
+    encoder2 = true;
+  }
+  if(encoder1&&encoder2){
+    pasos++;
+    encoder1=false;
+    encoder2=false;
+    Serial.print("Pasos: ");
+    Serial.println(pasos);
+  }/*
+  if((pasos%40==0) && (pasos != 0)){
+    vueltas++;
+    Serial.print("Vueltas: ");
+    Serial.println(vueltas);
+  }*/
+}
+
+int cmApasos(int cm)
+{
+  return (cm*conversionCm);
+}
+
+void adelante (int distancia){
+  if(distancia != 0){
+    digitalWrite(pinizq,HIGH);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,HIGH);
+    digitalWrite(pinder2,LOW);
+    pasos = 0;
+    Serial.println(cmApasos(distancia));
+    while(pasos <= cmApasos(distancia)){
+      cuentaPasos();
+      Serial.print("Pasos: ");
+      Serial.println(pasos);
+    }
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,LOW);
+  }else{
+    digitalWrite(pinizq,HIGH);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,HIGH);
+    digitalWrite(pinder2,LOW);
+  }
+}
+
+void atras (int distancia){
+  if(distancia != 0){
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,HIGH);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,HIGH);
+    pasos = 0;
+    Serial.println(cmApasos(distancia));
+    while(pasos <= cmApasos(distancia)){
+      cuentaPasos();
+      Serial.print("Pasos: ");
+      Serial.println(pasos);
+    }
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,LOW);
+  }else{
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,HIGH);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,HIGH);
   }
 }
