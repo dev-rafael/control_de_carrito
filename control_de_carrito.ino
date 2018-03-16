@@ -3,6 +3,7 @@ SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
 float conversionCm = 1.55;
+float convercionGrados = 2.78;
 boolean encoder;
 boolean encoder1;
 boolean encoder2;
@@ -45,14 +46,11 @@ if (BT.available())
       digitalWrite(pinder,LOW);
       digitalWrite(pinizq2,LOW);
       digitalWrite(pinder2,HIGH);
-      Serial.println(" Izquierda ");
+      Serial.println(" Derecha ");
       break;
     case 'A'://Activa el giro de ambos motores hacia la derecha
-      digitalWrite(pinder,HIGH);
-      digitalWrite(pinizq,LOW);
-      digitalWrite(pinder2,LOW);
-      digitalWrite(pinizq2,HIGH);
-      Serial.println(" Derecha ");
+      izquierda(0);
+      Serial.println(" Izquierda ");
       break;
     case 'W'://Aumenta la velocidad de giro
       adelante(0);
@@ -77,7 +75,7 @@ if (BT.available())
       }
       break;
     case 'N':      
-      atras(21);
+      izquierda(360);
       break;
     case 'O'://Detiene los motores
       digitalWrite(pinizq,LOW);
@@ -118,6 +116,10 @@ void cuentaPasos(){
 int cmApasos(int cm)
 {
   return (cm*conversionCm);
+}
+
+int gradosApasos(int grados){
+  return (grados*convercionGrados);
 }
 
 void adelante (int distancia){
@@ -169,3 +171,55 @@ void atras (int distancia){
     digitalWrite(pinder2,HIGH);
   }
 }
+
+void izquierda (int grados){
+  if(grados != 0){
+    digitalWrite(pinder,HIGH);
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder2,LOW);
+    digitalWrite(pinizq2,HIGH);
+    pasos = 0;
+    Serial.println(gradosApasos(grados));
+    while(pasos <= gradosApasos(grados)){
+      cuentaPasos();
+      Serial.print("Pasos: ");
+      Serial.println(pasos);
+    }
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,LOW);
+  }else{
+    digitalWrite(pinder,HIGH);
+      digitalWrite(pinizq,LOW);
+      digitalWrite(pinder2,LOW);
+      digitalWrite(pinizq2,HIGH);
+  }
+}
+
+void derecha (int grados){
+  if(grados != 0){
+    digitalWrite(pinizq,HIGH);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,HIGH);
+    pasos = 0;
+    Serial.println(gradosApasos(grados));
+    while(pasos <= gradosApasos(grados)){
+      cuentaPasos();
+      Serial.print("Pasos: ");
+      Serial.println(pasos);
+    }
+    digitalWrite(pinizq,LOW);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,LOW);
+  }else{
+    digitalWrite(pinizq,HIGH);
+    digitalWrite(pinder,LOW);
+    digitalWrite(pinizq2,LOW);
+    digitalWrite(pinder2,HIGH);
+  }
+}
+
+
