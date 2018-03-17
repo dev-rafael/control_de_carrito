@@ -1,12 +1,18 @@
 #include <SoftwareSerial.h>
 SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
+char comando;
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
 float conversionCm = 1.55;
 float convercionGrados = 2.78;
 boolean encoder;
 boolean encoder1;
 boolean encoder2;
+boolean programacion = false;
+int contador = 0;
+char string[21];
+char comandos[5];
+int desplazamiento[5];
 int pasos = 0;
 int vueltas = 0;
 int pinizq=5;//Pin de activacion izquierdo del primer puente H
@@ -32,59 +38,72 @@ void loop() {
   cuentaPasos();
   
   //Revisa si hay una conexion BT establecida
-if (BT.available())
- {
+  if (BT.available())
+  {
     //Lee la instruccion enviada por el control
     cnal=BT.read();
     //Escribe en el puerto serial la instruccion recibida
     Serial.write(cnal);
+    
+    if(programacion){
+      if(cnal!='.' && contador < 21){
+        comandos[contador] = cnal;
+      }else{
+        programacion = false;
+        parsear(string);
+      }
+    }
+    
     //Determina que accion llevar acabo segun la instruccion recibida
-  switch (cnal)
-  {
-    case 'D'://Activa el giro de ambos motores hacia la izquierda
-      digitalWrite(pinizq,HIGH);
-      digitalWrite(pinder,LOW);
-      digitalWrite(pinizq2,LOW);
-      digitalWrite(pinder2,HIGH);
-      Serial.println(" Derecha ");
-      break;
-    case 'A'://Activa el giro de ambos motores hacia la derecha
-      izquierda(0);
-      Serial.println(" Izquierda ");
-      break;
-    case 'W'://Aumenta la velocidad de giro
-      adelante(0);
-      break;
-    case 'V':
-      if (velocidad<=204)
-      {
-        velocidad=velocidad+51;
-        analogWrite(pinvel,velocidad);
-        Serial.print(velocidad);
-      }
-      break;
-    case 'S'://Disminuye la velocidad de giro
-      atras(0);
-      break;
-    case 'B':
-      if (velocidad>=51)
-      {
-        velocidad=velocidad-51;
-        analogWrite(pinvel,velocidad);
-        Serial.print(velocidad);
-      }
-      break;
-    case 'N':      
-      izquierda(360);
-      break;
-    case 'O'://Detiene los motores
-      digitalWrite(pinizq,LOW);
-      digitalWrite(pinder,LOW);
-      digitalWrite(pinizq2,LOW);
-      digitalWrite(pinder2,LOW);
-      Serial.println(" Apagado ");
-      break;
-  }
+    switch (cnal)
+    {
+      case 'F':        
+        programacion = true;
+        break;
+      case 'D'://Activa el giro de ambos motores hacia la izquierda
+        digitalWrite(pinizq,HIGH);
+        digitalWrite(pinder,LOW);
+        digitalWrite(pinizq2,LOW);
+        digitalWrite(pinder2,HIGH);
+        Serial.println(" Derecha ");
+        break;
+      case 'A'://Activa el giro de ambos motores hacia la derecha
+        izquierda(0);
+        Serial.println(" Izquierda ");
+        break;
+      case 'W'://Aumenta la velocidad de giro
+        adelante(0);
+        break;
+      case 'V':
+        if (velocidad<=204)
+        {
+          velocidad=velocidad+51;
+          analogWrite(pinvel,velocidad);
+          Serial.print(velocidad);
+        }
+        break;
+      case 'S'://Disminuye la velocidad de giro
+        atras(0);
+        break;
+      case 'B':
+        if (velocidad>=51)
+        {
+          velocidad=velocidad-51;
+          analogWrite(pinvel,velocidad);
+          Serial.print(velocidad);
+        }
+        break;
+      case 'N':      
+        izquierda(360);
+        break;
+      case 'O'://Detiene los motores
+        digitalWrite(pinizq,LOW);
+        digitalWrite(pinder,LOW);
+        digitalWrite(pinizq2,LOW);
+        digitalWrite(pinder2,LOW);
+        Serial.println(" Apagado ");
+        break;
+    }
   }
   if (Serial.available())
   {
@@ -120,6 +139,13 @@ int cmApasos(int cm)
 
 int gradosApasos(int grados){
   return (grados*convercionGrados);
+}
+
+void parsear (char string[21]){
+  int j = 0;
+  for(int i=0;i<contador;i++){
+    comandos[i]=string[j];
+  }
 }
 
 void adelante (int distancia){
