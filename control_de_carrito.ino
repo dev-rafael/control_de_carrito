@@ -1,7 +1,6 @@
 #include <SoftwareSerial.h>
 SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
-char comando;
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
 float conversionCm = 1.55;
 float convercionGrados = 2.78;
@@ -10,9 +9,10 @@ boolean encoder1;
 boolean encoder2;
 boolean programacion = false;
 int contador = 0;
-char string[21];
+char linea[21];
 char comandos[5];
 int desplazamiento[5];
+int numComand;
 int pasos = 0;
 int vueltas = 0;
 int pinizq=5;//Pin de activacion izquierdo del primer puente H
@@ -43,14 +43,17 @@ void loop() {
     //Lee la instruccion enviada por el control
     cnal=BT.read();
     //Escribe en el puerto serial la instruccion recibida
+    Serial.print("Comando inicial: ");
     Serial.write(cnal);
+    Serial.println(" fin.");
     
     if(programacion){
       if(cnal!='.' && contador < 21){
-        comandos[contador] = cnal;
+        linea[contador] = cnal;
+        contador++;
       }else{
         programacion = false;
-        parsear(string);
+        parsear();
       }
     }
     
@@ -61,10 +64,7 @@ void loop() {
         programacion = true;
         break;
       case 'D'://Activa el giro de ambos motores hacia la izquierda
-        digitalWrite(pinizq,HIGH);
-        digitalWrite(pinder,LOW);
-        digitalWrite(pinizq2,LOW);
-        digitalWrite(pinder2,HIGH);
+        derecha(0);
         Serial.println(" Derecha ");
         break;
       case 'A'://Activa el giro de ambos motores hacia la derecha
@@ -141,11 +141,63 @@ int gradosApasos(int grados){
   return (grados*convercionGrados);
 }
 
-void parsear (char string[21]){
-  int j = 0;
-  for(int i=0;i<contador;i++){
-    comandos[i]=string[j];
+void parsear (){
+  int i;
+  int j=0;
+  Serial.print(contador);
+  Serial.println("Entra en parseo");
+  for(i=0;i<contador;i++){
+    Serial.print(linea[i]);
   }
+  Serial.println(" fin de string de comandos.");
+  i=0;
+  while(j<contador){
+    comandos[i]=linea[j];
+    char numero [4];
+    int contNum = 0;
+    while(linea[j+1] != ',' && (j+1)<=contador){
+      j++;
+      numero[contNum] = linea[j];
+      contNum++;
+    }
+    j=j+2;
+    desplazamiento[i]=atoi(numero);
+    i++;
+    
+  }
+  int contDebug;
+  Serial.print("Comandos: ");
+  for(contDebug = 0; contDebug < i; contDebug++){
+    Serial.print(comandos[contDebug]);
+    Serial.print(',');
+  }
+  Serial.println(".");
+  Serial.print("Desplazamientos: ");
+  for(contDebug = 0; contDebug < i; contDebug++){
+    Serial.print(desplazamiento[contDebug]);
+    Serial.print(',');
+  }
+  Serial.println(".");
+  
+  /*
+  int i = 0;
+  int j = 0;
+  boolean salir = false;
+  while(!salir && j<contador){
+    comandos[i]=string[j];
+    j++;
+    char acumulador[5];
+    int iacum=0;
+    while(string[j]!=','){
+      acumulador[iacum]=string[j];
+      iacum++;
+    }
+    desplazamiento[i]=atoi(acumulador);
+    iacum=0;
+    i++;
+  }
+  Serial.print("Comandos: ");
+  Serial.println(comandos);*/
 }
 
 void adelante (int distancia){
