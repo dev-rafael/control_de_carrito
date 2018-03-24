@@ -3,13 +3,13 @@ SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
 float conversionCm = 1.55;
-float convercionGrados = 2.78;
+float convercionGrados = 0.178;
 boolean encoder;
 boolean encoder1;
 boolean encoder2;
 boolean programacion = false;
 int contador = 0;
-char linea[21];
+char linea[23];
 char comandos[5];
 int desplazamiento[5];
 int numComand;
@@ -58,51 +58,79 @@ void loop() {
     }
     
     //Determina que accion llevar acabo segun la instruccion recibida
-    switch (cnal)
-    {
-      case 'F':        
-        programacion = true;
-        break;
-      case 'D'://Activa el giro de ambos motores hacia la izquierda
-        derecha(0);
-        Serial.println(" Derecha ");
-        break;
-      case 'A'://Activa el giro de ambos motores hacia la derecha
-        izquierda(0);
-        Serial.println(" Izquierda ");
-        break;
-      case 'W'://Aumenta la velocidad de giro
-        adelante(0);
-        break;
-      case 'V':
-        if (velocidad<=204)
-        {
-          velocidad=velocidad+51;
-          analogWrite(pinvel,velocidad);
-          Serial.print(velocidad);
-        }
-        break;
-      case 'S'://Disminuye la velocidad de giro
-        atras(0);
-        break;
-      case 'B':
-        if (velocidad>=51)
-        {
-          velocidad=velocidad-51;
-          analogWrite(pinvel,velocidad);
-          Serial.print(velocidad);
-        }
-        break;
-      case 'N':      
-        izquierda(360);
-        break;
-      case 'O'://Detiene los motores
-        digitalWrite(pinizq,LOW);
-        digitalWrite(pinder,LOW);
-        digitalWrite(pinizq2,LOW);
-        digitalWrite(pinder2,LOW);
-        Serial.println(" Apagado ");
-        break;
+    if(!programacion){
+      switch (cnal)
+      {
+        case 'E':
+          Serial.println("Modo ejecucion");
+          for(int contExe=0; contExe<numComand; contExe++){
+            Serial.print("Comando: ");
+            Serial.println(comandos[contExe]);
+            switch(comandos[contExe]){
+              case 'W':
+                adelante(desplazamiento[contExe]);
+                break;
+              case 'A':
+                izquierda(desplazamiento[contExe]);
+                break;
+              case 'S':
+                atras(desplazamiento[contExe]);
+                break;
+              case 'D':
+                derecha(desplazamiento[contExe]);
+                break;
+              default:
+                if(Serial.available()){
+                  BT.write("Comando no reconocido");
+                }
+                break;
+            }
+          }
+          break;
+        case 'F':        
+          programacion = true;
+          break;
+        case 'D'://Activa el giro de ambos motores hacia la izquierda
+          derecha(0);
+          Serial.println(" Derecha ");
+          break;
+        case 'A'://Activa el giro de ambos motores hacia la derecha
+          izquierda(0);
+          Serial.println(" Izquierda ");
+          break;
+        case 'W'://Aumenta la velocidad de giro
+          adelante(0);
+          break;
+        case 'V':
+          if (velocidad<=204)
+          {
+            velocidad=velocidad+51;
+            analogWrite(pinvel,velocidad);
+            Serial.print(velocidad);
+          }
+          break;
+        case 'S'://Disminuye la velocidad de giro
+          atras(0);
+          break;
+        case 'B':
+          if (velocidad>=51)
+          {
+            velocidad=velocidad-51;
+            analogWrite(pinvel,velocidad);
+            Serial.print(velocidad);
+          }
+          break;
+        case 'N':      
+          izquierda(360);
+          break;
+        case 'O'://Detiene los motores
+          digitalWrite(pinizq,LOW);
+          digitalWrite(pinder,LOW);
+          digitalWrite(pinizq2,LOW);
+          digitalWrite(pinder2,LOW);
+          Serial.println(" Apagado ");
+          break;
+      }
     }
   }
   if (Serial.available())
@@ -153,18 +181,29 @@ void parsear (){
   i=0;
   while(j<contador){
     comandos[i]=linea[j];
-    char numero [4];
+    char numero [6]={};
     int contNum = 0;
-    while(linea[j+1] != ',' && (j+1)<=contador){
+    while(linea[j+1] != ',' && (j+1)<contador){
       j++;
+      /*
+      Serial.print(contNum);
+      Serial.print(linea[j]);
+      */
       numero[contNum] = linea[j];
+      //Serial.println(numero[contNum]);
       contNum++;
     }
+    //numero[contNum]='\0';
     j=j+2;
     desplazamiento[i]=atoi(numero);
     i++;
     
   }
+
+  numComand=i;
+  contador=0;
+  
+  
   int contDebug;
   Serial.print("Comandos: ");
   for(contDebug = 0; contDebug < i; contDebug++){
@@ -178,26 +217,6 @@ void parsear (){
     Serial.print(',');
   }
   Serial.println(".");
-  
-  /*
-  int i = 0;
-  int j = 0;
-  boolean salir = false;
-  while(!salir && j<contador){
-    comandos[i]=string[j];
-    j++;
-    char acumulador[5];
-    int iacum=0;
-    while(string[j]!=','){
-      acumulador[iacum]=string[j];
-      iacum++;
-    }
-    desplazamiento[i]=atoi(acumulador);
-    iacum=0;
-    i++;
-  }
-  Serial.print("Comandos: ");
-  Serial.println(comandos);*/
 }
 
 void adelante (int distancia){
