@@ -2,8 +2,8 @@
 SoftwareSerial BT(10,9);
 char cnal;  //Variable que guarda la instruccion enviada por el control
 int pinEncoder = 8;//Pin donde se conecta el sensor del econder
-float conversionCm = 1.55;
-float convercionGrados = 0.178;
+float conversionCm = 0.5;
+float convercionGrados = 0.3;
 boolean encoder;
 boolean encoder1;
 boolean encoder2;
@@ -70,13 +70,13 @@ void loop() {
               case 'W':
                 adelante(desplazamiento[contExe]);
                 break;
-              case 'A':
+              case 'D':
                 izquierda(desplazamiento[contExe]);
                 break;
               case 'S':
                 atras(desplazamiento[contExe]);
                 break;
-              case 'D':
+              case 'A':
                 derecha(desplazamiento[contExe]);
                 break;
               default:
@@ -85,16 +85,17 @@ void loop() {
                 }
                 break;
             }
+            delay(100);
           }
           break;
         case 'F':        
           programacion = true;
           break;
-        case 'D'://Activa el giro de ambos motores hacia la izquierda
+        case 'A'://Activa el giro de ambos motores hacia la izquierda
           derecha(0);
           Serial.println(" Derecha ");
           break;
-        case 'A'://Activa el giro de ambos motores hacia la derecha
+        case 'D'://Activa el giro de ambos motores hacia la derecha
           izquierda(0);
           Serial.println(" Izquierda ");
           break;
